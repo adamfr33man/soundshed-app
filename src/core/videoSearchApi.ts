@@ -5,7 +5,7 @@ export interface VideoSearchResult {
     url: string;
     itemId: string;
     datePublished: Date;
-    channelId: string
+    channelId: string;
     channelTitle: string;
     title: string;
     description: string;
@@ -13,18 +13,15 @@ export interface VideoSearchResult {
 }
 
 export class VideoSearchApi {
-
     async search(query: string) {
-
         var opts: youtubeSearch.YouTubeSearchOptions = {
             maxResults: 10,
-            key: envSettings.YoutubeAPIKey
+            key: envSettings.YoutubeAPIKey,
         };
 
-        let results = await youtubeSearch(query, opts,);
+        let results = await youtubeSearch(query, opts);
         let searchResults: VideoSearchResult[] = [];
         for (let r of results.results) {
-
             searchResults.push({
                 url: r.link,
                 itemId: r.id,
@@ -33,9 +30,8 @@ export class VideoSearchApi {
                 channelTitle: r.channelTitle,
                 title: r.title,
                 description: r.description,
-                thumbnailUrl: r.thumbnails.medium.url
-
-            })
+                thumbnailUrl: r.thumbnails.medium.url,
+            });
         }
         return searchResults;
     }

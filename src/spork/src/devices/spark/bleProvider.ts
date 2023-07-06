@@ -4,15 +4,14 @@ import { Utils } from "../../../../core/utils";
 import { SparkMessageReader } from "./sparkMessageReader";
 
 export class BleProvider implements SerialCommsProvider {
-
     private selectedDevice: BluetoothDevice;
     private server: BluetoothRemoteGATTServer;
 
-    private serviceGenericUUID = '00001800-0000-1000-8000-00805f9b34fb'; // service 'generic_access'
-    private serviceCustomUUID = '0000ffc0-0000-1000-8000-00805f9b34fb'; // service 'FFC0'
+    private serviceGenericUUID = "00001800-0000-1000-8000-00805f9b34fb"; // service 'generic_access'
+    private serviceCustomUUID = "0000ffc0-0000-1000-8000-00805f9b34fb"; // service 'FFC0'
 
-    private deviceCommandCharacteristicUUID = '0xffc1'; // device command messages
-    private deviceChangesCharacteristicUUID = '0xffc2'; // device change messages
+    private deviceCommandCharacteristicUUID = "0xffc1"; // device command messages
+    private deviceChangesCharacteristicUUID = "0xffc2"; // device change messages
 
     private commandCharacteristic: BluetoothRemoteGATTCharacteristic;
     private changeCharacteristic: BluetoothRemoteGATTCharacteristic;
@@ -36,10 +35,9 @@ export class BleProvider implements SerialCommsProvider {
     }
 
     /**
-    * Find one or more bluetooth devices to choose from
-    **/
+     * Find one or more bluetooth devices to choose from
+     **/
     public async scanForDevices(): Promise<BluetoothDeviceInfo[]> {
-
         let devices: BluetoothDeviceInfo[] = [];
 
         const options = { acceptAllDevices: true, optionalServices: [this.serviceGenericUUID, this.serviceCustomUUID] };
@@ -53,7 +51,6 @@ export class BleProvider implements SerialCommsProvider {
             this.log("Got device selection from chooser. " + JSON.stringify(this.selectedDevice));
 
             devices.push({ name: this.selectedDevice.name, address: this.selectedDevice.id, port: null });
-
         } catch (e) {
             this.log("BLE device discovery cancelled or failed. " + JSON.stringify(e));
         }
@@ -62,7 +59,6 @@ export class BleProvider implements SerialCommsProvider {
     }
 
     public async connect(device: BluetoothDeviceInfo): Promise<boolean> {
-
         if (this.isConnected) {
             return true;
         }
@@ -79,7 +75,9 @@ export class BleProvider implements SerialCommsProvider {
 
             this.log("Getting Device Characteristics..");
 
-            this.commandCharacteristic = await service.getCharacteristic(parseInt(this.deviceCommandCharacteristicUUID));
+            this.commandCharacteristic = await service.getCharacteristic(
+                parseInt(this.deviceCommandCharacteristicUUID)
+            );
             this.changeCharacteristic = await service.getCharacteristic(parseInt(this.deviceChangesCharacteristicUUID));
 
             return true;
@@ -99,14 +97,14 @@ export class BleProvider implements SerialCommsProvider {
 
     buf2hex(buffer) {
         // https://stackoverflow.com/questions/40031688/javascript-arraybuffer-to-hex
-        return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+        return Array.prototype.map.call(new Uint8Array(buffer), (x) => ("00" + x.toString(16)).slice(-2)).join("");
     }
 
     private log(msg, ...args) {
         console.debug("[BLE Provider] : " + msg);
 
         if (args) {
-            args.forEach(element => {
+            args.forEach((element) => {
                 console.debug("[BLE Provider] : " + element);
             });
         }
@@ -115,7 +113,7 @@ export class BleProvider implements SerialCommsProvider {
     getTimeDeltaSinceLastMsg() {
         if (this.lastMsgReceivedTime != null) {
             let current = new Date();
-            return Math.abs(current.getTime() - this.lastMsgReceivedTime.getTime())
+            return Math.abs(current.getTime() - this.lastMsgReceivedTime.getTime());
         } else {
             this.lastMsgReceivedTime = new Date();
         }
@@ -124,14 +122,13 @@ export class BleProvider implements SerialCommsProvider {
     getTimeDeltaSinceLastCmd() {
         if (this.lastMsgSentTime != null) {
             let current = new Date();
-            return Math.abs(current.getTime() - this.lastMsgSentTime.getTime())
+            return Math.abs(current.getTime() - this.lastMsgSentTime.getTime());
         } else {
             this.lastMsgSentTime = new Date();
         }
     }
 
     public async disconnect() {
-
         if (this.selectedDevice.gatt.connected) {
             this.selectedDevice.gatt.disconnect();
         }
@@ -140,7 +137,6 @@ export class BleProvider implements SerialCommsProvider {
     }
 
     public handleAndQueueMessageData(dataChunk: Uint8Array) {
-
         this.lastMsgReceivedTime = new Date();
 
         dataChunk = this.trimHeader(dataChunk);
@@ -157,13 +153,10 @@ export class BleProvider implements SerialCommsProvider {
             // no terminator, append all to remainder
             this.lastDataChunkRemainder = SparkMessageReader.mergeBytes(this.lastDataChunkRemainder, dataChunk);
         } else {
-
             let currentSliceStartIndex = 0;
             let currentTerminatorItemIdx = 0;
 
             for (let i of terminatorIndexes) {
-
-
                 if (this.getTimeDeltaSinceLastMsg() > 100 && this.lastDataChunkRemainder.length > 0) {
                     this.log("Warning: outdated chunk remainder consumed");
                 }
@@ -190,7 +183,7 @@ export class BleProvider implements SerialCommsProvider {
 
     trimHeader(data: Uint8Array) {
         // Spark 40 multi-part messages have a 16 byte header we can discard
-        if ((data[0] == 0x01) && (data[1] == 0xfe)) {
+        if (data[0] == 0x01 && data[1] == 0xfe) {
             data = data.subarray(16);
         }
         return data;
@@ -203,9 +196,9 @@ export class BleProvider implements SerialCommsProvider {
         try {
             await this.changeCharacteristic.startNotifications();
 
-            this.log('> Notifications started');
+            this.log("> Notifications started");
 
-            this.changeCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
+            this.changeCharacteristic.addEventListener("characteristicvaluechanged", (event) => {
                 const dataView: DataView = (<any>event.target).value;
                 let dataChunk = new Uint8Array(dataView.buffer);
 
@@ -216,23 +209,20 @@ export class BleProvider implements SerialCommsProvider {
                 this.log(`[RECV RAW BLE]: ${event.timeStamp} ${this.buf2hex(dataChunk)}`);
 
                 this.handleAndQueueMessageData(dataChunk);
-
             });
         } catch (err) {
-            this.log('> Failed to begin listening for hardware data changes');
+            this.log("> Failed to begin listening for hardware data changes");
         }
-
     }
 
     private isSingleChunkMessage(chunk: Uint8Array): boolean {
-        return ((chunk[4] == 4) || (chunk[4] == 3 && chunk[7] == 0));
+        return chunk[4] == 4 || (chunk[4] == 3 && chunk[7] == 0);
         // command type 4 is an ACK, which is only one chunk
         // some command type 3 commands are only one chunk
         // all other types of messages are multi-chunk
     }
 
     public readReceiveQueue(): Array<Uint8Array> {
-
         if (this.receiveQueue.length == 0) {
             return null;
         }
@@ -247,7 +237,7 @@ export class BleProvider implements SerialCommsProvider {
         // only return our queue if the last item ends in an f7 terminator
         if (lastItem[lastItem.length - 1] == 0xf7) {
             const received = [...this.receiveQueue];
-            this.receiveQueue = new Array<Uint8Array>;
+            this.receiveQueue = new Array<Uint8Array>();
             return received;
         } else {
             return null;
@@ -255,7 +245,6 @@ export class BleProvider implements SerialCommsProvider {
     }
 
     public peekReceiveQueueEnd(): Uint8Array {
-
         // only return our queue end if the last item ends in an f7 terminator
         let lastItem = this.receiveQueue[this.receiveQueue.length - 1];
         if (lastItem[lastItem.length - 1] == 0xf7) {
@@ -268,7 +257,6 @@ export class BleProvider implements SerialCommsProvider {
     isSendQueueProcessing = false;
 
     public async write(msg: any) {
-
         // add this message to start of queue, queue will be processed end-first
         this.sendQueue.unshift(msg);
 

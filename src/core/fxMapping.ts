@@ -12,15 +12,18 @@ export class FxMappingToneToSpark {
     }
 
     mapFx(source: ToneFx): SignalPath {
-
         let type = source.type.replace("pg.spark40.", "");
 
         if (type.indexOf("bias.reverb") > -1 && type != "bias.reverb") {
-
             let i: SignalPath = {
                 active: source.enabled == true,
-                params: source.params.map(p => { return <FxParam>{ index: parseInt(p.paramId), value: typeof (p.value) == "string" ? parseFloat(p.value) : p.value } }),
-                dspId: null
+                params: source.params.map((p) => {
+                    return <FxParam>{
+                        index: parseInt(p.paramId),
+                        value: typeof p.value == "string" ? parseFloat(p.value) : p.value,
+                    };
+                }),
+                dspId: null,
             };
 
             let reverbTypeParam = 0.0;
@@ -34,56 +37,74 @@ export class FxMappingToneToSpark {
             i.dspId = "bias.reverb";
             return i;
         } else {
-
             return {
                 active: source.enabled == true,
-                params: source.params.map((p => { return <FxParam>{ index: parseInt(p.paramId), value: typeof (p.value) == "string" ? parseFloat(p.value) : p.value } })),
+                params: source.params.map((p) => {
+                    return <FxParam>{
+                        index: parseInt(p.paramId),
+                        value: typeof p.value == "string" ? parseFloat(p.value) : p.value,
+                    };
+                }),
                 // type: this.mapFxCategory(type),
                 dspId: this.mapFxId(type),
                 // name: source.name
-            }
+            };
         }
     }
 
     /** map from soundshed tone to a spark preset */
     mapFrom(source: Tone) {
         let dest: Preset = {
-            meta: { name: source.name, description: source.description, id: source.toneId.replace("pg.tc.", ""), version: source.version, icon: "icon.png" },
-            sigpath: source.fx.map(fx => this.mapFx(fx)),
+            meta: {
+                name: source.name,
+                description: source.description,
+                id: source.toneId.replace("pg.tc.", ""),
+                version: source.version,
+                icon: "icon.png",
+            },
+            sigpath: source.fx.map((fx) => this.mapFx(fx)),
             type: "jamup_speaker",
-            bpm: source.bpm ?? 120
-        }
+            bpm: source.bpm ?? 120,
+        };
 
         // remove unsupported FX types
-        dest.sigpath = dest.sigpath.filter(f => f.dspId != "GraphicalEQ7");
+        dest.sigpath = dest.sigpath.filter((f) => f.dspId != "GraphicalEQ7");
         return dest;
     }
 }
 
 export class FxMappingSparkToTone {
-
     static getReverbDspId(modeParam) {
-        let reverbVariant = parseFloat((modeParam).toFixed(2));
+        let reverbVariant = parseFloat(modeParam.toFixed(2));
 
         let dspId = "bias.reverb";
         switch (reverbVariant) {
-            case 0.0: dspId = "bias.reverb.0"; //room studio a
+            case 0.0:
+                dspId = "bias.reverb.0"; //room studio a
                 break;
-            case 0.1: dspId = "bias.reverb.1"; // room studio b
+            case 0.1:
+                dspId = "bias.reverb.1"; // room studio b
                 break;
-            case 0.2: dspId = "bias.reverb.2"; // chamber
+            case 0.2:
+                dspId = "bias.reverb.2"; // chamber
                 break;
-            case 0.3: dspId = "bias.reverb.3"; // hall natural
+            case 0.3:
+                dspId = "bias.reverb.3"; // hall natural
                 break;
-            case 0.4: dspId = "bias.reverb.4"; // hall medium
+            case 0.4:
+                dspId = "bias.reverb.4"; // hall medium
                 break;
-            case 0.5: dspId = "bias.reverb.5"; // hall ambient
+            case 0.5:
+                dspId = "bias.reverb.5"; // hall ambient
                 break;
-            case 0.6: dspId = "bias.reverb.6"; // plate short
+            case 0.6:
+                dspId = "bias.reverb.6"; // plate short
                 break;
-            case 0.7: dspId = "bias.reverb.7"; // plate rich
+            case 0.7:
+                dspId = "bias.reverb.7"; // plate rich
                 break;
-            case 0.8: dspId = "bias.reverb.8"; // plate long
+            case 0.8:
+                dspId = "bias.reverb.8"; // plate long
                 break;
             default:
                 dspId = "bias.reverb.0";
@@ -96,7 +117,6 @@ export class FxMappingSparkToTone {
      *  soundshed tone fx ids are prefixed so fx catalog lookup requires normalised id
      * */
     static mapFxId(sourceId) {
-
         if (sourceId.indexOf("pg.spark40") == -1) {
             return "pg.spark40." + sourceId;
         } else {
@@ -112,7 +132,16 @@ export class FxMappingSparkToTone {
             type: dspId,
             name: source.name,
             enabled: source.active == true,
-            params: source.params.map(p => <ToneFxParam>{ paramId: p.index.toString(), value: p.value, type: p.type, name: p.name, enabled: true })
+            params: source.params.map(
+                (p) =>
+                    <ToneFxParam>{
+                        paramId: p.index.toString(),
+                        value: p.value,
+                        type: p.type,
+                        name: p.name,
+                        enabled: true,
+                    }
+            ),
         };
 
         // trim last two params (reverb model and on/off)
@@ -123,7 +152,6 @@ export class FxMappingSparkToTone {
     }
 
     mapFx(source: SignalPath): ToneFx {
-
         if (source.dspId == "bias.reverb") {
             return this.mapFxReverb(source);
         } else {
@@ -131,13 +159,21 @@ export class FxMappingSparkToTone {
                 type: "pg.spark40." + source.dspId,
                 name: source.name,
                 enabled: source.active == true,
-                params: source.params.map(p => <ToneFxParam>{ paramId: p.index.toString(), value: p.value, type: p.type, name: p.name, enabled: true })
+                params: source.params.map(
+                    (p) =>
+                        <ToneFxParam>{
+                            paramId: p.index.toString(),
+                            value: p.value,
+                            type: p.type,
+                            name: p.name,
+                            enabled: true,
+                        }
+                ),
             };
         }
     }
 
     mapFrom(source: Preset) {
-
         if ((<any>source).schemaVersion) {
             //already a tone format, return a copy
             return Object.assign({}, <Tone>source);
@@ -154,11 +190,10 @@ export class FxMappingSparkToTone {
             version: source.meta.version,
             bpm: source.bpm,
             schemaVersion: "1",
-            fx: source.sigpath.map(s => this.mapFx(s)),
+            fx: source.sigpath.map((s) => this.mapFx(s)),
             timeSig: "4/4",
-            datecreated: new Date
+            datecreated: new Date(),
         };
         return dest;
     }
-
 }

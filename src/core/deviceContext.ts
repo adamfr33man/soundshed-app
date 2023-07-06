@@ -1,9 +1,7 @@
-
 import { SparkDeviceManager } from "../spork/src/devices/spark/sparkDeviceManager";
 import { SerialCommsProvider } from "../spork/src/interfaces/serialCommsProvider";
 
 export class DeviceContext {
-
     deviceManager: SparkDeviceManager;
     msgSendDelegate: (type: string, msg: any) => void;
 
@@ -12,14 +10,13 @@ export class DeviceContext {
     }
 
     public init(commsProvider: SerialCommsProvider, msgDelegate: (type: string, msg: any) => void) {
-
         this.log("DeviceContext: Init");
 
         this.deviceManager = new SparkDeviceManager(commsProvider);
 
         this.deviceManager.onStateChanged = (s: any) => {
-            this.log("DeviceContext: device state changed")
-            this.sendMessageToApp('device-state-changed', s);
+            this.log("DeviceContext: device state changed");
+            this.sendMessageToApp("device-state-changed", s);
         };
 
         this.msgSendDelegate = msgDelegate;
@@ -37,63 +34,62 @@ export class DeviceContext {
         // ... do actions on behalf of the Renderer
         this.log("got event from render:" + args.action);
 
-        if (args.action == 'scan') {
+        if (args.action == "scan") {
             this.deviceManager.scanForDevices().then((devices) => {
                 this.log(JSON.stringify(devices));
 
-                this.sendMessageToApp('devices-discovered', devices);
+                this.sendMessageToApp("devices-discovered", devices);
             });
         }
 
-        if (args.action == 'connect') {
+        if (args.action == "connect") {
             this.log("attempting to connect:: " + JSON.stringify(args));
 
             try {
-                return this.deviceManager.connect(args.data).then(connectedOk => {
-                    if (connectedOk) {
-                        this.sendMessageToApp("device-connection-changed", "connected")
+                return this.deviceManager
+                    .connect(args.data)
+                    .then((connectedOk) => {
+                        if (connectedOk) {
+                            this.sendMessageToApp("device-connection-changed", "connected");
 
-                        this.deviceManager.sendCommand("get_preset", 0);
+                            this.deviceManager.sendCommand("get_preset", 0);
+                        } else {
+                            this.sendMessageToApp("device-connection-changed", "failed");
+                        }
 
-                    } else {
-                        this.sendMessageToApp("device-connection-changed", "failed")
-                    }
-
-                    return connectedOk;
-                }).catch(err => {
-                    this.sendMessageToApp("device-connection-changed", "failed")
-                });
-
+                        return connectedOk;
+                    })
+                    .catch((err) => {
+                        this.sendMessageToApp("device-connection-changed", "failed");
+                    });
             } catch (e) {
-                this.sendMessageToApp("device-connection-changed", "failed")
+                this.sendMessageToApp("device-connection-changed", "failed");
             }
         }
 
-        if (args.action == 'applyPreset') {
-
+        if (args.action == "applyPreset") {
             // send preset
             this.deviceManager.sendCommand("set_preset_from_model", args.data).then(() => {
                 setTimeout(() => {
                     //apply preset to virtual channel 127 (0x7f)
                     this.deviceManager.sendCommand("set_channel", 0x7f);
                 }, 100);
-
             });
         }
 
-        if (args.action == 'getCurrentChannel') {
+        if (args.action == "getCurrentChannel") {
             this.deviceManager.sendCommand("get_selected_channel", {});
         }
 
-        if (args.action == 'getDeviceName') {
+        if (args.action == "getDeviceName") {
             this.deviceManager.sendCommand("get_device_name", {});
         }
 
-        if (args.action == 'getDeviceSerial') {
+        if (args.action == "getDeviceSerial") {
             this.deviceManager.sendCommand("get_device_serial", {});
         }
 
-        if (args.action == 'getPreset') {
+        if (args.action == "getPreset") {
             let ch = 0;
             if (args.data >= 0) {
                 ch = args.data;
@@ -101,19 +97,19 @@ export class DeviceContext {
             this.deviceManager.sendCommand("get_preset", ch);
         }
 
-        if (args.action == 'setChannel') {
+        if (args.action == "setChannel") {
             this.deviceManager.sendCommand("set_channel", args.data);
         }
 
-        if (args.action == 'setFxParam') {
+        if (args.action == "setFxParam") {
             this.deviceManager.sendCommand("set_fx_param", args.data);
         }
 
-        if (args.action == 'setFxToggle') {
+        if (args.action == "setFxToggle") {
             this.deviceManager.sendCommand("set_fx_onoff", args.data);
         }
 
-        if (args.action == 'changeFx') {
+        if (args.action == "changeFx") {
             this.deviceManager.sendCommand("change_fx", args.data);
 
             /*setTimeout(() => {
@@ -122,16 +118,13 @@ export class DeviceContext {
             }, 1000);*/
         }
 
-        if (args.action == 'changeAmp') {
+        if (args.action == "changeAmp") {
             this.deviceManager.sendCommand("change_amp", args.data);
         }
 
-        if (args.action == 'storePreset') {
-
+        if (args.action == "storePreset") {
             // send current preset with preset and channel num we want to store to
             this.deviceManager.sendCommand("set_preset_from_model", args.data);
-
         }
-
     }
 }

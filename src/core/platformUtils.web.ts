@@ -10,6 +10,6 @@ const openLink = (e, linkUrl) => {
 
 const getAppVersion = () => {
     return envSettings.Version;
-}
+};
 
 export { openLink, evt as platformEvents, evt as nativeEvents, getAppVersion };

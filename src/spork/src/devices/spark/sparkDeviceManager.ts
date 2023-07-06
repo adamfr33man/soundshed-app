@@ -8,39 +8,32 @@ import { SerialCommsProvider } from "../../interfaces/serialCommsProvider";
 import { Utils } from "../../../../core/utils";
 
 export class SparkDeviceManager implements DeviceController {
-
     public onStateChanged;
 
     public deviceAddress = "";
 
     private reader = new SparkMessageReader();
 
-    constructor(private connection: SerialCommsProvider) {
-
-    }
+    constructor(private connection: SerialCommsProvider) {}
 
     public async scanForDevices(): Promise<BluetoothDeviceInfo[]> {
         return this.connection.scanForDevices();
     }
 
     public async connect(device: BluetoothDeviceInfo): Promise<boolean> {
-
         var connected = await this.connection.connect(device);
 
         if (connected) {
-
             // setup device read listener, running as background message receiver
             this.startReceiver();
-
         } else {
-            this.log('Device not yet connected! Cannot listen for data');
+            this.log("Device not yet connected! Cannot listen for data");
         }
 
         return connected;
     }
 
     public async startReceiver() {
-
         // continuously peek message queue for message terminator, then consume queue
 
         this.log("Starting background receiver");
@@ -48,12 +41,10 @@ export class SparkDeviceManager implements DeviceController {
         this.connection.beginQueuedReceive();
 
         let msgLoop = async () => {
-
-
             let queueContent = this.connection.readReceiveQueue();
 
             if (queueContent != null && queueContent.length > 0) {
-                this.log('Received last message in batch, processing messages ' + queueContent.length);
+                this.log("Received last message in batch, processing messages " + queueContent.length);
                 for (var c of queueContent) {
                     this.log(`MSG:${c[2]} IDX: ${c[8]} of ${c[7]} \t${this.buf2hex(c)}`);
                 }
@@ -71,15 +62,14 @@ export class SparkDeviceManager implements DeviceController {
     public async disconnect() {
         try {
             await this.connection.disconnect();
-        } catch { }
+        } catch {}
     }
 
     private buf2hex(buffer: ArrayBuffer) {
-        return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+        return Array.prototype.map.call(new Uint8Array(buffer), (x) => ("00" + x.toString(16)).slice(-2)).join("");
     }
 
     public async readStateMessage(dataArray: Array<Uint8Array>): Promise<DeviceMessage[]> {
-
         let reader = this.reader;
 
         reader.set_message(dataArray);
@@ -89,10 +79,9 @@ export class SparkDeviceManager implements DeviceController {
         // reader receivedMessageQueue now contains an ordered list of interpreted messages
         let msgList = reader.readMessageQueue();
         for (let m of msgList) {
-
             this.log(m);
 
-            if (m.type == 'preset') {
+            if (m.type == "preset") {
                 reader.deviceState.presetConfig = <Preset>m.value;
                 this.hydrateDeviceStateInfo(reader.deviceState);
             }
@@ -101,7 +90,7 @@ export class SparkDeviceManager implements DeviceController {
                 reader.deviceState.message = m;
                 this.onStateChanged(reader.deviceState);
             } else {
-                this.log("No onStateChange handler defined.")
+                this.log("No onStateChange handler defined.");
             }
         }
 
@@ -109,14 +98,11 @@ export class SparkDeviceManager implements DeviceController {
     }
 
     private hydrateDeviceStateInfo(deviceState: DeviceState) {
-
         let fxCatalog = FxCatalogProvider.getFxCatalog();
 
         // populate metadata about fx etc
         if (deviceState.presetConfig) {
-
             for (let fx of deviceState.presetConfig.sigpath) {
-
                 let dspId = fx.dspId;
 
                 if (dspId.indexOf("bias.reverb") > -1) {
@@ -126,7 +112,7 @@ export class SparkDeviceManager implements DeviceController {
                     dspId = FxMappingSparkToTone.mapFxId(dspId);
                 }
 
-                let dsp = fxCatalog.catalog.find(f => f.dspId == dspId);
+                let dsp = fxCatalog.catalog.find((f) => f.dspId == dspId);
 
                 if (dsp != null) {
                     fx.type = dsp.type;
@@ -134,12 +120,11 @@ export class SparkDeviceManager implements DeviceController {
                     fx.description = dsp.description;
 
                     for (let p of fx.params) {
-                        let paramInfo = dsp.params.find(pa => pa.index == p.index);
+                        let paramInfo = dsp.params.find((pa) => pa.index == p.index);
                         if (paramInfo) {
                             p.name = paramInfo.name;
                         }
                     }
-
                 } else {
                     this.log("DSP Id is not present in FX Catalog: " + dspId);
 
@@ -157,7 +142,6 @@ export class SparkDeviceManager implements DeviceController {
     }
 
     public async sendCommand(type, data) {
-
         let msg = new SparkCommandMessage();
 
         let msgArray = [];
@@ -170,15 +154,14 @@ export class SparkDeviceManager implements DeviceController {
         if (type == "set_preset_from_model") {
             this.log("Setting preset" + JSON.stringify(data));
 
-            if (Array.isArray(data)){
+            if (Array.isArray(data)) {
                 this.log("Got preset and target channel number");
                 // if data is array with preset and channel number  use that
                 msgArray = msg.create_preset_from_model(data[0], data[1]);
-            }else {
+            } else {
                 // set preset to soft channel (not stored to hardware)
                 msgArray = msg.create_preset_from_model(data);
             }
-
         }
 
         if (type == "store_current_preset") {
@@ -241,19 +224,16 @@ export class SparkDeviceManager implements DeviceController {
             try {
                 this.log("[SEND RAW]: " + this.buf2hex(dat));
 
-                if (typeof (Buffer) != "undefined") {
+                if (typeof Buffer != "undefined") {
                     await this.connection.write(Buffer.from(dat));
                 } else {
                     await this.connection.write(dat);
                 }
-
-
             } catch (err) {
                 console.warn("Caught err writing msg array");
                 await Utils.sleepAsync(100);
             }
         }
-
     }
 
     hexToUint8Array(hex: string): Uint8Array {

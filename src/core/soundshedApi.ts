@@ -13,7 +13,7 @@ export interface UserRegistrationResult {
 export interface UserDetails {
     data: {
         userId: string;
-    }
+    };
 }
 export interface Login {
     email: string;
@@ -24,7 +24,6 @@ export interface LoginResult {
     error: string;
     data: any;
 }
-
 
 export interface ToneFxParam {
     paramId: string;
@@ -73,8 +72,9 @@ export interface UserInfo {
 }
 
 export class SoundshedApi {
-
-    baseUrl: string = env.IsWebMode ? "https://api-proxy.soundshed.com/soundshed-tones/" : "https://api.soundshed.com/app/v1/"; //"http://localhost:3000/api/v1/";
+    baseUrl: string = env.IsWebMode
+        ? "https://api-proxy.soundshed.com/soundshed-tones/"
+        : "https://api.soundshed.com/app/v1/"; //"http://localhost:3000/api/v1/";
     currentToken: string;
 
     constructor() {
@@ -89,9 +89,8 @@ export class SoundshedApi {
             let decoded = <any>jwt_decode(this.currentToken);
             return {
                 id: decoded.id,
-                name: decoded.name
+                name: decoded.name,
             };
-
         } else {
             return null;
         }
@@ -111,71 +110,79 @@ export class SoundshedApi {
     }
 
     async registerUser(registration: UserRegistration): Promise<ActionResult<UserRegistrationResult>> {
-
         let url = this.baseUrl + "user/register";
-        let response = await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(registration) });
-        let result = await <UserRegistrationResult><any>response.json();
+        let response = await fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(registration),
+        });
+        let result = await (<UserRegistrationResult>(<any>response.json()));
 
         if (result.error == null) {
             return { completedOk: true, message: "OK", result: result };
         } else {
             return {
-                completedOk: false, message: result.error
+                completedOk: false,
+                message: result.error,
             };
-
         }
     }
 
     async login(loginDetails: Login): Promise<ActionResult<LoginResult>> {
-
         let url = this.baseUrl + "user/login";
-        let response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(loginDetails) });
-        let result = await <LoginResult><any>response.json();
+        let response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(loginDetails),
+        });
+        let result = await (<LoginResult>(<any>response.json()));
 
         if (result.error == null) {
             this.currentToken = result.data.token;
             localStorage.setItem("_authtoken", this.currentToken);
 
-
             return { completedOk: true, message: "OK", result: result };
         } else {
             return {
-                completedOk: false, message: result.error
+                completedOk: false,
+                message: result.error,
             };
-
         }
     }
 
     async updateTone(tone: Tone): Promise<ActionResult<any>> {
-
         let url = this.baseUrl + "tones/upload";
-        let response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.currentToken}` }, body: JSON.stringify(tone) });
-        let result = await <any>response.json();
+        let response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${this.currentToken}` },
+            body: JSON.stringify(tone),
+        });
+        let result = await (<any>response.json());
 
         if (result.error == null) {
-
             return { completedOk: true, message: "OK", result: result };
         } else {
             return {
-                completedOk: false, message: result.error
+                completedOk: false,
+                message: result.error,
             };
-
         }
     }
 
     async getTones(): Promise<ActionResult<Tone[]>> {
         let url = this.baseUrl + "tones/";
 
-        let response = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
-        let result = await <any>response.json();
+        let response = await fetch(url, { method: "GET", headers: { "Content-Type": "application/json" } });
+        let result = await (<any>response.json());
 
         if (result.error == null) {
             return { completedOk: true, message: "OK", result: result.data.tones };
         } else {
             return {
-                completedOk: false, message: result.error
+                completedOk: false,
+                message: result.error,
             };
-
         }
     }
 }

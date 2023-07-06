@@ -5,16 +5,16 @@ export const TonesStateStore = new Store({
     toneResults: [],
     toneCloudResults: [],
     storedPresets: [],
-    isSearchInProgress: false
+    isSearchInProgress: false,
 });
 
 export interface IToneEditStore {
-    isToneEditorOpen: boolean,
+    isToneEditorOpen: boolean;
     tone: Tone;
     editTone: Tone;
 }
 export const ToneEditStore = new Store<IToneEditStore>({
     isToneEditorOpen: false,
     tone: null,
-    editTone: null
+    editTone: null,
 });

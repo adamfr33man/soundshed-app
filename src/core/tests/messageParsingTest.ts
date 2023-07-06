@@ -3,9 +3,7 @@ import { BleProvider } from "../../spork/src/devices/spark/bleProvider";
 import { SparkDeviceManager } from "../../spork/src/devices/spark/sparkDeviceManager";
 
 export class MessageParsingTest {
-
     async Test1() {
-
         // Spark 40 Example
         let data = [
             "01fe000041ff6a000000000000000000f0013a640301200f001900015924004533394545313600412d444531302d00343634362d3832f7f0013a590301000f011935372d360037393137423630103842363228322d404372756e636823f7f0013a4d0301400f0219302e",
@@ -14,7 +12,7 @@ export class MessageParsingTest {
             "01fe000041ff6a000000000000000000114af7f0013a5d0301500f07193e771f3b0603114a000000000128414320426f6f6c7374431500114af7f0013a1e0301200f08193f0f5e261601114a3e7a586c1602114a3e1a177c7603114a3e502b3ff7f0013a260301300f09",
             "01fe000041ff6a0000000000000000001904114a3e0d322e0a27466c61306e6765724213003b114a3e535c3001f7f0013a210301180f0a19114a3f29193d3802114a3f270539612944656c6160794d6f6e6f4215f7f0013a4e0301300f0b1900114a3d313e3c3e01114a",
             "01fe000041ff6a0000000000000000003e3429237702114a3f3402637103114a3ff7f0013a770301300f0c1919191a044b114a3f0000002b00626961732e72653076657262431700f7f0013a330301180f0d19114a3e4b19072901114a3f651b410302114a3f1b19001e",
-            "01fe000041ff3c00000000000000000003114a3e6cf7f0013a5a0301500f0e183e590411414a3f1507500511414a3f2666670611394a3e4c4c4d07f7"
+            "01fe000041ff3c00000000000000000003114a3e6cf7f0013a5a0301500f0e183e590411414a3f1507500511414a3f2666670611394a3e4c4c4d07f7",
         ];
 
         var dev = new SparkDeviceManager(null);
@@ -27,9 +25,7 @@ export class MessageParsingTest {
         console.log(msgs);
     }
 
-
     async Test2() {
-
         // Spark 40 Example
         let data = [
             "01fe000041ff6a000000000000000000f0013a640301200f001900015924004533394545313600412d444531302d00343634362d3832f7f0013a590301000f011935372d360037393137423630103842363228322d404372756e636823f7f0013a4d0301400f0219302e",
@@ -39,9 +35,8 @@ export class MessageParsingTest {
             "01fe000041ff6a0000000000000000001904114a3e0d322e0a27466c61306e6765724213003b114a3e535c3001f7f0013a210301180f0a19114a3f29193d3802114a3f270539612944656c6160794d6f6e6f4215f7f0013a4e0301300f0b1900114a3d313e3c3e01114a",
             "01fe000041ff6a0000000000000000003e3429237702114a3f3402637103114a3ff7f0013a770301300f0c1919191a044b114a3f0000002b00626961732e72653076657262431700f7f0013a330301180f0d19114a3e4b19072901114a3f651b410302114a3f1b19001e",
             "01fe000041ff6a00000000000000000003114a3e6cf7f0013a5a0301500f0e183e590411414a3f1507500511414a3f2666670611394a3e4c4c4d07f7f0013a640301200f001900015924004533394545313600412d444531302d00343634362d3832f7f0013a59030100",
-            "01fe000041ff6a0000000000000000000f011935372d360037393137423630103842363228322d404372756e636823f7f0013a4d0301400f0219302e372800322d4372756e6302682869636f6e2e28706e674a427000f7f0013a4a0301300f031900172e62006961732e"
-        ]
-
+            "01fe000041ff6a0000000000000000000f011935372d360037393137423630103842363228322d404372756e636823f7f0013a4d0301400f0219302e372800322d4372756e6302682869636f6e2e28706e674a427000f7f0013a4a0301300f031900172e62006961732e",
+        ];
 
         var dev = new SparkDeviceManager(null);
         let devBytes = new Array<Uint8Array>();
@@ -54,7 +49,6 @@ export class MessageParsingTest {
     }
 
     async Test4() {
-
         // Spark Mini Example, possibly garbled
         let data = [
             "f0013a120301200f001900005924003631463032",
@@ -90,9 +84,8 @@ export class MessageParsingTest {
             "05114a3e6ef7f0013a420301480f0e0a4a380611",
             "1d4a3e19191a17f7f0013a120301200f00190000",
             "5924003631463032464500392d444637382d0034",
-            "3142342d4231f7f0013a470301000f011941362d"
-        ]
-
+            "3142342d4231f7f0013a470301000f011941362d",
+        ];
 
         var dev = new SparkDeviceManager(null);
         let devBytes = new Array<Uint8Array>();
@@ -106,8 +99,8 @@ export class MessageParsingTest {
         //split data on f7
         // get all bytes into single stream
         let allBytes = [];
-        devBytes.forEach(element => {
-            element.forEach(d => {
+        devBytes.forEach((element) => {
+            element.forEach((d) => {
                 allBytes.push(d);
             });
         });
@@ -122,13 +115,11 @@ export class MessageParsingTest {
                 allRows.push(new Uint8Array(currentRow));
                 currentRow = [];
             }
-
         }
         if (currentRow.length > 0) allRows.push(new Uint8Array(currentRow));
 
         console.log("Rows split by f7:");
         for (let c of allRows) {
-
             console.log(`MSG:${c[2]} IDX: ${c[8]} of ${c[7]} \t${this.buf2hex(c)}`);
         }
 
@@ -136,12 +127,12 @@ export class MessageParsingTest {
         console.log(msgs);
     }
 
-    buf2hex(buffer) { // buffer is an ArrayBuffer
-        return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+    buf2hex(buffer) {
+        // buffer is an ArrayBuffer
+        return Array.prototype.map.call(new Uint8Array(buffer), (x) => ("00" + x.toString(16)).slice(-2)).join("");
     }
 
     async Test3() {
-
         // Spark mini response stream
         let data = [
             "f0013a010310000001f7",
@@ -204,7 +195,7 @@ export class MessageParsingTest {
             "013a1b030118100a19114a3f071a387b03114a3f",
             "1418100d04114a3f1b18490705114a3f00f7f001",
             "3a5b030140100b1900000611214a3f0000002944",
-            "00656c61794d6f6e366f"
+            "00656c61794d6f6e366f",
         ];
 
         var dev = new SparkDeviceManager(null);
@@ -215,10 +206,10 @@ export class MessageParsingTest {
 
         let msgs = await dev.readStateMessage(devBytes);
 
-        console.debug("Raw Interpreted Messages:")
+        console.debug("Raw Interpreted Messages:");
         console.debug(msgs);
 
-        console.debug("Performing Multipart parsing of data into queue:")
+        console.debug("Performing Multipart parsing of data into queue:");
         // test message queuing with split on terminator
         var serial = new BleProvider();
 
@@ -228,17 +219,17 @@ export class MessageParsingTest {
 
         let q = serial.readReceiveQueue();
 
-        console.debug("Full Message Queue:")
+        console.debug("Full Message Queue:");
         for (let item of q) {
             console.debug(serial.buf2hex(item));
         }
         msgs = await dev.readStateMessage(q);
 
-        console.debug("Full Queue Interpreted Messages:")
+        console.debug("Full Queue Interpreted Messages:");
         console.debug(msgs);
 
         ////////////// read data into message queue in two batches, unconsumed data should remain in queue for next batch
-        console.debug("Preforming multi-stage queue parsing")
+        console.debug("Preforming multi-stage queue parsing");
         serial = new BleProvider();
 
         for (let dat of devBytes.slice(0, 9)) {
@@ -249,7 +240,7 @@ export class MessageParsingTest {
 
         // process first section of data rows
         q = serial.readReceiveQueue();
-        console.debug("Part 1 of Message Queue: " + q.length)
+        console.debug("Part 1 of Message Queue: " + q.length);
 
         for (let item of q) {
             console.debug(serial.buf2hex(item));
@@ -263,7 +254,7 @@ export class MessageParsingTest {
             serial.handleAndQueueMessageData(dat);
         }
         let q2 = serial.readReceiveQueue();
-        console.debug("Part 2 of Message Queue:" + q2.length)
+        console.debug("Part 2 of Message Queue:" + q2.length);
         for (let item of q2) {
             console.debug(serial.buf2hex(item));
         }
@@ -275,19 +266,19 @@ export class MessageParsingTest {
         // process joined data rows with new reader
         dev = new SparkDeviceManager(null);
         let joined = q.concat(q2);
-        console.debug("Multi-Stage Message Queue: " + joined.length)
+        console.debug("Multi-Stage Message Queue: " + joined.length);
         for (let item of joined) {
             console.debug(serial.buf2hex(item));
         }
         for (let item of joined) {
             console.debug(serial.buf2hex(item));
         }
-        console.debug("Multi Interpreted Messages:")
+        console.debug("Multi Interpreted Messages:");
         msgs = await dev.readStateMessage(joined);
         console.debug(msgs);
 
         if (totalMultiStageMsgs != msgs.length) {
-            throw (`Multi stage reading ${totalMultiStageMsgs} does not match full batch reading ${msgs.length}`);
+            throw `Multi stage reading ${totalMultiStageMsgs} does not match full batch reading ${msgs.length}`;
         }
     }
 

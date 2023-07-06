@@ -11,6 +11,6 @@ const openLink = (e, linkUrl) => {
 
 const getAppVersion = () => {
     return envSettings.Version;
-}
+};
 
 export { openLink, evt as platformEvents, ipcRenderer as nativeEvents, getAppVersion };

@@ -1,6 +1,6 @@
 export interface DeviceMessage {
-    type?:string;
-    value?:any;
+    type?: string;
+    value?: any;
 }
 
 export interface Preset extends DeviceMessage {
@@ -40,7 +40,7 @@ export interface FxToggleMessage extends DeviceMessage {
     active: boolean;
 }
 
-export interface BpmMessage extends DeviceMessage{
+export interface BpmMessage extends DeviceMessage {
     bpm: number;
 }
 

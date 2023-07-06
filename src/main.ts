@@ -1,5 +1,4 @@
-
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from "electron";
 
 let win: BrowserWindow;
 let callbackForDeviceSelection = null;
@@ -11,24 +10,22 @@ const sendMessageToApp = (type: string, msg: any) => {
     } else {
         logInfo("Cannot send message to app, win not defined");
     }
-}
+};
 
 try {
-    require('electron-reloader')(module)
-} catch (_) { }
+    require("electron-reloader")(module);
+} catch (_) {}
 
 if (handleSquirrelEvent()) {
     // squirrel event handled and app will exit in 1000ms, so don't do anything else
     app.quit();
-}
-else {
-
+} else {
     // perform update check and start app normally
 
     initApp();
 
     setTimeout(() => {
-        require('update-electron-app')();
+        require("update-electron-app")();
     }, 10000);
 }
 
@@ -38,15 +35,14 @@ function logInfo(msg) {
 }
 
 function initApp() {
-
-    ipcMain.handle('perform-action', (event, args) => {
+    ipcMain.handle("perform-action", (event, args) => {
         logInfo("In electron perform-action.. will do nothing:" + JSON.stringify(args));
 
         // ... do hardware actions on behalf of the Renderer
         //deviceContext.performAction(args);
     });
 
-    ipcMain.on('perform-device-selection', (event, args) => {
+    ipcMain.on("perform-device-selection", (event, args) => {
         // complete device selection process
         logInfo("Completing device selection " + JSON.stringify(args));
         if (callbackForDeviceSelection) {
@@ -60,13 +56,13 @@ function initApp() {
         createWindow();
     });
 
-    app.on('window-all-closed', () => {
-        if (process.platform !== 'darwin') {
+    app.on("window-all-closed", () => {
+        if (process.platform !== "darwin") {
             app.quit();
         }
     });
 
-    app.on('activate', () => {
+    app.on("activate", () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
         }
@@ -74,7 +70,6 @@ function initApp() {
 }
 
 function createWindow() {
-
     win = new BrowserWindow({
         width: 1280,
         height: 860,
@@ -83,9 +78,9 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false,
             webSecurity: false,
-            experimentalFeatures: true
-        }
-    })
+            experimentalFeatures: true,
+        },
+    });
 
     if (app.isPackaged) {
         win.removeMenu();
@@ -95,26 +90,28 @@ function createWindow() {
 
     let devicesDiscoveredCount = 0;
     // bluetooth device selection, fires multiple times as the process performs a scan, then the UI must present a device picker using deviceList, then the callback is used to resolve device selection
-    win.webContents.on('select-bluetooth-device', (event, deviceList, callback) => {
+    win.webContents.on("select-bluetooth-device", (event, deviceList, callback) => {
         event.preventDefault();
 
         callbackForDeviceSelection = callback;
 
         if (devicesDiscoveredCount != deviceList?.length) {
-
             if (deviceList && deviceList.length > 0) {
-
                 devicesDiscoveredCount = deviceList.length;
 
                 var mappedDevices = deviceList
-                    .filter(x => x.deviceName.indexOf("Spark") > -1)
-                    .map(x => { return { name: x.deviceName, address: x.deviceId, port: null } });
+                    .filter((x) => x.deviceName.indexOf("Spark") > -1)
+                    .map((x) => {
+                        return { name: x.deviceName, address: x.deviceId, port: null };
+                    });
 
-                logInfo(`Found ${mappedDevices.length} matching bluetooth devices out of ${deviceList.length}, send to UI for selection.`);
+                logInfo(
+                    `Found ${mappedDevices.length} matching bluetooth devices out of ${deviceList.length}, send to UI for selection.`
+                );
                 // send current device list to UI
                 sendMessageToApp("devices-discovered", mappedDevices);
 
-                var matched = deviceList.find(x => x.deviceName.indexOf("Spark") > -1);
+                var matched = deviceList.find((x) => x.deviceName.indexOf("Spark") > -1);
                 if (matched) {
                     logInfo("Auto selected device " + matched.deviceId);
                     callback(matched.deviceId);
@@ -122,9 +119,8 @@ function createWindow() {
             } else {
                 logInfo("No bluetooth devices found");
             }
-
         }
-    })
+    });
 
     const ses = win.webContents.session;
 
@@ -134,13 +130,11 @@ function createWindow() {
     });
 
     ses.setPermissionCheckHandler((webContents, permission, requestingOrigin) => {
-
         logInfo("Checked permission: " + permission);
         return true;
-
     });
 
-    win.loadFile('./build/index.html'); //    win.loadFile('./build/index.html');
+    win.loadFile("./build/index.html"); //    win.loadFile('./build/index.html');
 }
 
 // handle squirrel installer events
@@ -149,12 +143,12 @@ function handleSquirrelEvent() {
         return false;
     }
 
-    const ChildProcess = require('child_process');
-    const path = require('path');
+    const ChildProcess = require("child_process");
+    const path = require("path");
 
-    const appFolder = path.resolve(process.execPath, '..');
-    const rootAtomFolder = path.resolve(appFolder, '..');
-    const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+    const appFolder = path.resolve(process.execPath, "..");
+    const rootAtomFolder = path.resolve(appFolder, "..");
+    const updateDotExe = path.resolve(path.join(rootAtomFolder, "Update.exe"));
     const exeName = path.basename(process.execPath);
 
     const spawn = function (command, args) {
@@ -162,7 +156,7 @@ function handleSquirrelEvent() {
 
         try {
             spawnedProcess = ChildProcess.spawn(command, args, { detached: true });
-        } catch (error) { }
+        } catch (error) {}
 
         return spawnedProcess;
     };
@@ -173,30 +167,30 @@ function handleSquirrelEvent() {
 
     const squirrelEvent = process.argv[1];
     switch (squirrelEvent) {
-        case '--squirrel-install':
-        case '--squirrel-updated':
+        case "--squirrel-install":
+        case "--squirrel-updated":
             // Optionally do things such as:
             // - Add your .exe to the PATH
             // - Write to the registry for things like file associations and
             //   explorer context menus
 
             // Install desktop and start menu shortcuts
-            spawnUpdate(['--createShortcut', exeName]);
+            spawnUpdate(["--createShortcut", exeName]);
 
             setTimeout(app.quit, 1000);
             return true;
 
-        case '--squirrel-uninstall':
+        case "--squirrel-uninstall":
             // Undo anything you did in the --squirrel-install and
             // --squirrel-updated handlers
 
             // Remove desktop and start menu shortcuts
-            spawnUpdate(['--removeShortcut', exeName]);
+            spawnUpdate(["--removeShortcut", exeName]);
 
             setTimeout(app.quit, 1000);
             return true;
 
-        case '--squirrel-obsolete':
+        case "--squirrel-obsolete":
             // This is called on the outgoing version of your app before
             // we update to the new version - it's the opposite of
             // --squirrel-updated

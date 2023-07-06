@@ -1,4 +1,3 @@
-
 /**
  * Defines the interface for a class that maps an input event to a target.
  * e.g. Midi Input > Preset Selection

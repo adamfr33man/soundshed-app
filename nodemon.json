@@ -1,5 +1,5 @@
 {
-  "env": {
-    "NODE_OPTIONS": "--inspect"
-  }
+    "env": {
+        "NODE_OPTIONS": "--inspect"
+    }
 }

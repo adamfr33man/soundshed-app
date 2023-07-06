@@ -6,5 +6,5 @@ export const UIFeatureToggleStore = new Store({
     enableMyTones: true,
     enableToneEditor: true,
     enableLessons: false,
-    enableSoundshedLogin: false
+    enableSoundshedLogin: false,
 });

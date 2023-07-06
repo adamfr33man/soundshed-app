@@ -5,21 +5,18 @@ import { BleProvider } from "../../spork/src/devices/spark/bleProvider";
 import { SparkDeviceManager } from "../../spork/src/devices/spark/sparkDeviceManager";
 
 export class WebConnectionTest {
-
     log(msg) {
         console.log("WebConnectionTest: " + msg);
     }
 
     testRunning = false;
     deviceManager = null;
-    bleProvider = null
+    bleProvider = null;
 
     // basic set of non-ui based tests
     async RunTest() {
-
         if (!this.testRunning) {
-
-            this.bleProvider= new BleProvider();
+            this.bleProvider = new BleProvider();
 
             var devices = await this.bleProvider.scanForDevices();
 
@@ -36,7 +33,7 @@ export class WebConnectionTest {
             this.deviceManager = new SparkDeviceManager(this.bleProvider);
 
             this.deviceManager.onStateChanged = (args: any) => {
-                this.log("Device state changed...")
+                this.log("Device state changed...");
 
                 if (args.lastMessageReceived) {
                     this.log("LastMsg - " + JSON.stringify(args.lastMessageReceived));
@@ -50,14 +47,13 @@ export class WebConnectionTest {
 
                                 this.log("PresetConfig - " + JSON.stringify(args.presetConfig));
                             }
-
                         }
                     }
 
                     if (args.lastMessageReceived.type == "hardware_channel_current") {
                         // channel changed, fetch the new preset
-                        this.log("Would get preset..")
-                      //  this.deviceManager.sendCommand("get_preset", args.lastMessageReceived.presetNumber).then(() => { });
+                        this.log("Would get preset..");
+                        //  this.deviceManager.sendCommand("get_preset", args.lastMessageReceived.presetNumber).then(() => { });
                     }
                 }
             };
@@ -67,11 +63,9 @@ export class WebConnectionTest {
             this.testRunning = true;
 
             while (1) {
-
                 // keep test alive
                 await Utils.sleepAsync(500);
             }
-
         }
 
         // when connected and processing results, perform a basic set of operations
@@ -81,10 +75,7 @@ export class WebConnectionTest {
 
         // query preset
 
-
         // set channel
         //await deviceManager.sendCommand("set_channel", 1);
-
-
     }
 }

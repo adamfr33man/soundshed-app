@@ -11,13 +11,7 @@ import Button from "react-bootstrap/Button";
 import ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
 import ReactPlayer from "react-player/youtube";
-import {
-  HashRouter as Router,
-  NavLink,
-  Route,
-  Routes,
-  unstable_HistoryRouter,
-} from "react-router-dom";
+import { HashRouter as Router, NavLink, Route, Routes, unstable_HistoryRouter } from "react-router-dom";
 
 import { createBrowserHistory } from "history";
 
@@ -53,317 +47,291 @@ export const AppViewModelContext = React.createContext(appViewModel);
 export const DeviceViewModelContext = React.createContext(deviceViewModel);
 
 const App = () => {
-  const history = createBrowserHistory({ window });
+    const history = createBrowserHistory({ window });
 
-  useEffect(() => {
-    return history?.listen((evt) => {
-      console.debug(`Navigated the page to: ${evt.location.pathname}`);
-      appViewModel.logPageView(evt.location.pathname);
-    });
-  }, [history]);
-
-  const isNativeMode = AppStateStore.useState((s) => s.isNativeMode);
-  const isUserSignedIn = AppStateStore.useState((s) => s.isUserSignedIn);
-
-  const signInRequired = AppStateStore.useState((s) => s.isSignInRequired);
-
-  const userInfo = AppStateStore.useState((s) => s.userInfo);
-
-  const isConnected = DeviceStateStore.useState((s) => s.isConnected);
-
-  const playingVideoUrl = LessonStateStore.useState((s) => s.playingVideoUrl);
-  const [isVideoExpanded, setIsVideoExpanded] = React.useState(true);
-
-  const enableSoundshedLogin = UIFeatureToggleStore.useState(
-    (s) => s.enableSoundshedLogin
-  );
-
-  const requireSignIn = async () => {
-    AppStateStore.update((s) => {
-      s.isSignInRequired = true;
-    });
-  };
-
-  const performSignIn = (login: Login) => {
-    return appViewModel.performSignIn(login).then((loggedInOk) => {
-      if (loggedInOk == true) {
-        AppStateStore.update((s) => {
-          s.isSignInRequired = false;
+    useEffect(() => {
+        return history?.listen((evt) => {
+            console.debug(`Navigated the page to: ${evt.location.pathname}`);
+            appViewModel.logPageView(evt.location.pathname);
         });
-      }
+    }, [history]);
 
-      return loggedInOk;
-    });
-  };
+    const isNativeMode = AppStateStore.useState((s) => s.isNativeMode);
+    const isUserSignedIn = AppStateStore.useState((s) => s.isUserSignedIn);
 
-  const performRegistration = (reg: UserRegistration) => {
-    return appViewModel.performRegistration(reg).then((loggedInOk) => {
-      if (loggedInOk == true) {
+    const signInRequired = AppStateStore.useState((s) => s.isSignInRequired);
+
+    const userInfo = AppStateStore.useState((s) => s.userInfo);
+
+    const isConnected = DeviceStateStore.useState((s) => s.isConnected);
+
+    const playingVideoUrl = LessonStateStore.useState((s) => s.playingVideoUrl);
+    const [isVideoExpanded, setIsVideoExpanded] = React.useState(true);
+
+    const enableSoundshedLogin = UIFeatureToggleStore.useState((s) => s.enableSoundshedLogin);
+
+    const requireSignIn = async () => {
         AppStateStore.update((s) => {
-          s.isSignInRequired = false;
+            s.isSignInRequired = true;
         });
-      }
+    };
 
-      return loggedInOk;
-    });
-  };
+    const performSignIn = (login: Login) => {
+        return appViewModel.performSignIn(login).then((loggedInOk) => {
+            if (loggedInOk == true) {
+                AppStateStore.update((s) => {
+                    s.isSignInRequired = false;
+                });
+            }
 
-  const performSignOut = () => {
-    appViewModel.signOut();
-  };
+            return loggedInOk;
+        });
+    };
 
-  // perform startup
-  useEffect(() => {
-    console.log("App startup..");
+    const performRegistration = (reg: UserRegistration) => {
+        return appViewModel.performRegistration(reg).then((loggedInOk) => {
+            if (loggedInOk == true) {
+                AppStateStore.update((s) => {
+                    s.isSignInRequired = false;
+                });
+            }
 
-    const lastKnownDevices = []; // deviceViewModel.getLastKnownDevices();
-    if (lastKnownDevices.length > 0) {
-      DeviceStateStore.update((s) => {
-        s.devices = lastKnownDevices;
-      });
-    }
+            return loggedInOk;
+        });
+    };
 
-    appViewModel.init();
+    const performSignOut = () => {
+        appViewModel.signOut();
+    };
 
-    // load locally stored favourites
-    appViewModel.loadFavourites();
+    // perform startup
+    useEffect(() => {
+        console.log("App startup..");
 
-    // get latest tones from soundshed api
-    //appViewModel.loadLatestTones();
+        const lastKnownDevices = []; // deviceViewModel.getLastKnownDevices();
+        if (lastKnownDevices.length > 0) {
+            DeviceStateStore.update((s) => {
+                s.devices = lastKnownDevices;
+            });
+        }
 
-    if (UIFeatureToggleStore.getRawState().enabledPGToneCloud) {
-      appViewModel.loadLatestToneCloudTones();
-    }
+        appViewModel.init();
 
-    lessonManager.loadFavourites();
+        // load locally stored favourites
+        appViewModel.loadFavourites();
 
-    appViewModel.loadSettings();
+        // get latest tones from soundshed api
+        //appViewModel.loadLatestTones();
 
-    // mock amp connection and current preset
-    /* DeviceStore.update(s=>{
+        if (UIFeatureToggleStore.getRawState().enabledPGToneCloud) {
+            appViewModel.loadLatestToneCloudTones();
+        }
+
+        lessonManager.loadFavourites();
+
+        appViewModel.loadSettings();
+
+        // mock amp connection and current preset
+        /* DeviceStore.update(s=>{
       s.isConnected=true; 
       s.presetTone=TonesStateStore.getRawState().storedPresets[0];
       s.connectedDevice= {name:"Mock Amp", address:"A1:B2:C3:D4:E5"};
     });*/
+    }, []);
 
-  }, []);
+    let activeClassName = "nav-link active";
+    let inactiveClassName = "nav-link";
 
-  let activeClassName = "nav-link active";
-  let inactiveClassName = "nav-link";
+    return (
+        <main>
+            <Container fluid>
+                <ul className="nav nav-tabs">
+                    <li className="nav-item">
+                        <NavLink to="/" className={({ isActive }) => (isActive ? activeClassName : inactiveClassName)}>
+                            Home
+                        </NavLink>
+                    </li>
 
-  return (
-    <main>
-      <Container fluid>
-        <ul className="nav nav-tabs">
-          <li className="nav-item">
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                isActive ? activeClassName : inactiveClassName
-              }
-            >
-              Home
-            </NavLink>
-          </li>
+                    <li className="nav-item">
+                        <NavLink
+                            to="/tones"
+                            className={({ isActive }) => (isActive ? activeClassName : inactiveClassName)}
+                        >
+                            Tones
+                        </NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink
+                            to="/device"
+                            className={({ isActive }) => (isActive ? activeClassName : inactiveClassName)}
+                        >
+                            Amp
+                        </NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink
+                            to="/lessons"
+                            className={({ isActive }) => (isActive ? activeClassName : inactiveClassName)}
+                        >
+                            Jam
+                        </NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink
+                            to="/scalex"
+                            className={({ isActive }) => (isActive ? activeClassName : inactiveClassName)}
+                        >
+                            Toolkit
+                        </NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink
+                            to="/settings"
+                            className={({ isActive }) => (isActive ? activeClassName : inactiveClassName)}
+                        >
+                            Settings
+                        </NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink
+                            to="/about"
+                            className={({ isActive }) => (isActive ? activeClassName : inactiveClassName)}
+                        >
+                            About
+                        </NavLink>
+                    </li>
 
-          <li className="nav-item">
-            <NavLink
-              to="/tones"
-              className={({ isActive }) =>
-                isActive ? activeClassName : inactiveClassName
-              }
-            >
-              Tones
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink
-              to="/device"
-              className={({ isActive }) =>
-                isActive ? activeClassName : inactiveClassName
-              }
-            >
-              Amp
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink
-              to="/lessons"
-              className={({ isActive }) =>
-                isActive ? activeClassName : inactiveClassName
-              }
-            >
-              Jam
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink
-              to="/scalex"
-              className={({ isActive }) =>
-                isActive ? activeClassName : inactiveClassName
-              }
-            >
-              Toolkit
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                isActive ? activeClassName : inactiveClassName
-              }
-            >
-              Settings
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink
-              to="/about"
-              className={({ isActive }) =>
-                isActive ? activeClassName : inactiveClassName
-              }
-            >
-              About
-            </NavLink>
-          </li>
-
-          {enableSoundshedLogin ? (
-            <li className="my-2">
-              {isUserSignedIn ? (
-                <span
-                  className="badge rounded-pill bg-primary"
-                  onClick={performSignOut}
-                >
-                  {" "}
-                  <FontAwesomeIcon icon={faUser}></FontAwesomeIcon>{" "}
-                  {userInfo?.name}
-                </span>
-              ) : (
-                <button type="button"
-                  className="btn btn-sm"
-                  onClick={() => {
-                    requireSignIn();
-                  }}
-                >
-                  <FontAwesomeIcon icon={faUser}></FontAwesomeIcon>
-                  Sign In
-                </button>
-              )}
-            </li>
-          ) : (
-            ""
-          )}
-        </ul>
-
-        {enableSoundshedLogin ? (
-          <LoginControl
-            signInRequired={signInRequired}
-            onSignIn={performSignIn}
-            onRegistration={performRegistration}
-          ></LoginControl>
-        ) : (
-          ""
-        )}
-
-        {playingVideoUrl != null ? (
-          <Draggable>
-            <div className="pip-video-control">
-              <div className="row">
-                <div className="col">
-                  <button
-                    title="Close"
-                    className="btn btn-sm btn-dark"
-                    onClick={() => {
-                      LessonStateStore.update((s) => {
-                        s.playingVideoUrl = null;
-                      });
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faWindowMinimize}></FontAwesomeIcon>
-                  </button>
-                </div>
-                <div className="col offset-md-8">
-                  {isVideoExpanded == true ? (
-                    <button
-                      title="Small Video"
-                      className="btn btn-sm btn-dark"
-                      onClick={() => {
-                        setIsVideoExpanded(false);
-                      }}
-                    >
-                      {" "}
-                      <FontAwesomeIcon icon={faWindowRestore}></FontAwesomeIcon>
-                    </button>
-                  ) : (
-                    <button
-                      title="Large Video"
-                      className="btn btn-sm btn-dark"
-                      onClick={() => {
-                        setIsVideoExpanded(true);
-                      }}
-                    >
-                      <FontAwesomeIcon
-                        icon={faWindowMaximize}
-                      ></FontAwesomeIcon>
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div>
-                <ReactPlayer
-                  controls={true}
-                  url={playingVideoUrl}
-                  width={isVideoExpanded ? "640px" : "320px"}
-                  height={isVideoExpanded ? "360px" : "180px"}
-                />
-              </div>
-            </div>
-          </Draggable>
-        ) : (
-          ""
-        )}
-
-        <EditToneControl></EditToneControl>
-
-        <AppViewModelContext.Provider value={appViewModel}>
-          <DeviceViewModelContext.Provider value={deviceViewModel}>
-            <Routes>
-              <Route path="/" element={<HomeControl />} />
-              <Route
-                path="/device"
-                element={
-                  isNativeMode ? (
-                    isConnected ? (
-                      <DeviceMainControl></DeviceMainControl>
+                    {enableSoundshedLogin ? (
+                        <li className="my-2">
+                            {isUserSignedIn ? (
+                                <span className="badge rounded-pill bg-primary" onClick={performSignOut}>
+                                    {" "}
+                                    <FontAwesomeIcon icon={faUser}></FontAwesomeIcon> {userInfo?.name}
+                                </span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="btn btn-sm"
+                                    onClick={() => {
+                                        requireSignIn();
+                                    }}
+                                >
+                                    <FontAwesomeIcon icon={faUser}></FontAwesomeIcon>
+                                    Sign In
+                                </button>
+                            )}
+                        </li>
                     ) : (
-                      <DeviceSelectorControl></DeviceSelectorControl>
-                    )
-                  ) : (
-                    <AmpOfflineControl></AmpOfflineControl>
-                  )
-                }
-              />
+                        ""
+                    )}
+                </ul>
 
-              <Route path="/tones" element={<ToneBrowserControl />} />
-              <Route path="/lessons" element={<LessonsControl />} />
-              <Route path="/scalex" element={<ScalexControl />} />
-              <Route path="/settings" element={<SettingsControl />} />
-              <Route path="/about" element={<AboutControl />} />
+                {enableSoundshedLogin ? (
+                    <LoginControl
+                        signInRequired={signInRequired}
+                        onSignIn={performSignIn}
+                        onRegistration={performRegistration}
+                    ></LoginControl>
+                ) : (
+                    ""
+                )}
 
-            </Routes>
-          </DeviceViewModelContext.Provider>
-        </AppViewModelContext.Provider>
+                {playingVideoUrl != null ? (
+                    <Draggable>
+                        <div className="pip-video-control">
+                            <div className="row">
+                                <div className="col">
+                                    <button
+                                        title="Close"
+                                        className="btn btn-sm btn-dark"
+                                        onClick={() => {
+                                            LessonStateStore.update((s) => {
+                                                s.playingVideoUrl = null;
+                                            });
+                                        }}
+                                    >
+                                        <FontAwesomeIcon icon={faWindowMinimize}></FontAwesomeIcon>
+                                    </button>
+                                </div>
+                                <div className="col offset-md-8">
+                                    {isVideoExpanded == true ? (
+                                        <button
+                                            title="Small Video"
+                                            className="btn btn-sm btn-dark"
+                                            onClick={() => {
+                                                setIsVideoExpanded(false);
+                                            }}
+                                        >
+                                            {" "}
+                                            <FontAwesomeIcon icon={faWindowRestore}></FontAwesomeIcon>
+                                        </button>
+                                    ) : (
+                                        <button
+                                            title="Large Video"
+                                            className="btn btn-sm btn-dark"
+                                            onClick={() => {
+                                                setIsVideoExpanded(true);
+                                            }}
+                                        >
+                                            <FontAwesomeIcon icon={faWindowMaximize}></FontAwesomeIcon>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                <ReactPlayer
+                                    controls={true}
+                                    url={playingVideoUrl}
+                                    width={isVideoExpanded ? "640px" : "320px"}
+                                    height={isVideoExpanded ? "360px" : "180px"}
+                                />
+                            </div>
+                        </div>
+                    </Draggable>
+                ) : (
+                    ""
+                )}
 
-        <InputEventsControl></InputEventsControl>
-      </Container>
-    </main>
-  );
+                <EditToneControl></EditToneControl>
+
+                <AppViewModelContext.Provider value={appViewModel}>
+                    <DeviceViewModelContext.Provider value={deviceViewModel}>
+                        <Routes>
+                            <Route path="/" element={<HomeControl />} />
+                            <Route
+                                path="/device"
+                                element={
+                                    isNativeMode ? (
+                                        isConnected ? (
+                                            <DeviceMainControl></DeviceMainControl>
+                                        ) : (
+                                            <DeviceSelectorControl></DeviceSelectorControl>
+                                        )
+                                    ) : (
+                                        <AmpOfflineControl></AmpOfflineControl>
+                                    )
+                                }
+                            />
+
+                            <Route path="/tones" element={<ToneBrowserControl />} />
+                            <Route path="/lessons" element={<LessonsControl />} />
+                            <Route path="/scalex" element={<ScalexControl />} />
+                            <Route path="/settings" element={<SettingsControl />} />
+                            <Route path="/about" element={<AboutControl />} />
+                        </Routes>
+                    </DeviceViewModelContext.Provider>
+                </AppViewModelContext.Provider>
+
+                <InputEventsControl></InputEventsControl>
+            </Container>
+        </main>
+    );
 };
 
 const container = document.getElementById("app");
 const root = createRoot(container!);
 root.render(
-  <Router>
-    <App />
-  </Router>
+    <Router>
+        <App />
+    </Router>
 );
